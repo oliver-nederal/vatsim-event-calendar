@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-// @ts-expect-error - globals.css does not have types/exists
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 
