@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "vCalendar",
-  description: "VATAdria Events Calendar",
+  description: "VATSIM Events Calendar",
 };
 
 export default function RootLayout({
