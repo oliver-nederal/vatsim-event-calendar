@@ -1,8 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VATSIM Event Platform
+
+A minimalist no-frills Next.js web application for displaying VATSIM events in a clean, easy-to-use calendar interface.
+
+## Features
+
+- **Clean Calendar Interface** - Minimalist design with Tailwind CSS
+- **Automatic Data Sync** - Fetches events from VATSIM API with 1-hour caching
+- **Fast & Responsive** - Built with Next.js 15 and Turbopack
+- **Event Details** - Quickly view event details
+- **Smart Caching**
+- **Mobile Friendly**
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <your-repo-url>
+cd VATAdria-event-platform
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+3. Run the development server:
 
 ```bash
 npm run dev
@@ -10,27 +45,65 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) to view the application
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it Works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### API Integration
 
-## Learn More
+- **VATSIM Events API**: Fetches data from `https://my.vatsim.net/api/v2/events/latest`
+- **Caching Strategy**: Events are cached for 1 hour to prevent API spam
+- **Fallback**: Serves cached data if API is unavailable
 
-To learn more about Next.js, take a look at the following resources:
+### Data Flow
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Frontend requests events from `/api/events`
+2. Backend checks cache validity (1-hour expiry)
+3. If cache is stale, fetches fresh data from VATSIM API
+4. Processes and returns event data with caching metadata
+5. Calendar component renders events with interactive tooltips
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Architecture
 
-## Deploy on Vercel
+- **Frontend**: React with TypeScript, Tailwind CSS
+- **Backend**: Next.js API routes with in-memory caching
+- **Types**: Fully typed with TypeScript interfaces
+- **State**: React hooks for data fetching and error handling
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Customization
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Styling
+
+- Built with Tailwind CSS
+- Modify `src/app/globals.css` for global styles
+- Component-specific styles in respective `.tsx` files
+
+### Cache Duration
+
+Update cache duration in `src/app/api/events/route.ts`:
+
+```typescript
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+```
+
+### Event Display
+
+Customize event rendering in `src/components/Calendar.tsx`
+
+## Deployment
+
+- Run `npm run build && npm start`
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+Built for personal use • Data provided by VATSIM Network
