@@ -1,7 +1,10 @@
 {
-  "name": "vatadria-event-platform",
-  "version": "0.1.0",
-  "private": true,
+  "name": "vatsim-event-calendar",
+  "description": "VATSIM Events Calendar, made with ❤️ by Oliver Nederal",
+  "author": {"name": "Oliver Nederal", "email": "oliver@nederal.com"},
+  "license": "MIT",
+  "version": "0.0.1",
+  "private": false,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
