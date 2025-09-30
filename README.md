@@ -2,6 +2,8 @@
 
 A minimalist no-frills Next.js web application for displaying VATSIM events in a clean, easy-to-use calendar interface.
 
+![Screenshot of the webapp.](https://github.com/oliver-nederal/vatsim-event-calendar/blob/main/apppreview.jpg?raw=true)
+
 ## Features
 
 - **Clean Calendar Interface** - Minimalist design with Tailwind CSS
