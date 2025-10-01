@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ProcessedEvent } from '@/types/vatsim';
 import { ViewSelector, ViewType } from '@/components/ViewSelector';
+import { Region, REGION_OPTIONS } from '@/components/RegionSelector';
 import { 
   getTimeAsPercentage, 
   getHourlySlots, 
@@ -23,6 +24,8 @@ import {
 interface CalendarProps {
   events: ProcessedEvent[];
   region?: string;
+  selectedRegion: Region;
+  onRegionChange: (region: Region) => void;
   view: ViewType;
   onViewChange: (view: ViewType) => void;
 }
@@ -32,9 +35,58 @@ interface EventCardProps {
   onClick: () => void;
   style?: React.CSSProperties;
   isAllDay?: boolean;
+  view?: ViewType;
 }
 
-function ResponsiveEventCard({ event, onClick, style, isAllDay }: EventCardProps) {
+function ResponsiveEventCard({ event, onClick, style, isAllDay, view }: EventCardProps) {
+  const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  
+  useEffect(() => {
+    const handleResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Calculate if event is squished based on screen width, event width, and view type
+  const eventWidth = style?.width ? parseFloat(style.width.toString().replace('%', '')) : 100;
+  
+  // Calculate actual pixel width of the event
+  const actualEventWidth = (eventWidth / 100) * (screenWidth * 0.8); // Approximate calendar width
+  
+  // Adjust thresholds based on view type
+  const getThresholds = () => {
+    switch(view) {
+      case 'day':
+        return {
+          pixelWidth: 200, // More space in day view, need smaller threshold
+          screenWidth: 640, // Less aggressive on mobile for day view
+          percentWidth: 20 // Much more lenient in day view
+        };
+      case '3day':
+        return {
+          pixelWidth: 120, // Medium threshold for 3-day view
+          screenWidth: 768,
+          percentWidth: 10
+        };
+      case 'week':
+      default:
+        return {
+          pixelWidth: 100, // Most aggressive in week view
+          screenWidth: 900, // More aggressive screen threshold for week
+          percentWidth: 13
+        };
+    }
+  };
+  
+  const thresholds = getThresholds();
+  
+  // Event is squished based on view-specific thresholds
+  const isSquished = !isAllDay && (
+    actualEventWidth < thresholds.pixelWidth || 
+    screenWidth < thresholds.screenWidth || 
+    eventWidth < thresholds.percentWidth
+  );
+  
   return (
     <div 
       className={`absolute overflow-hidden transition-all duration-300 cursor-pointer group animate-in fade-in slide-in-from-bottom-2 ${
@@ -72,7 +124,7 @@ function ResponsiveEventCard({ event, onClick, style, isAllDay }: EventCardProps
       ) : (
         <>
           {/* Full-width image header for timed events */}
-          {event.banner && (
+          {event.banner && !isSquished && (
             <div className="w-full h-6 relative overflow-hidden">
               <Image 
                 src={event.banner} 
@@ -86,19 +138,69 @@ function ResponsiveEventCard({ event, onClick, style, isAllDay }: EventCardProps
           )}
           
           {/* Compact content for timed events */}
-          <div className="px-1.5 py-1">
-            <div className="text-[10px] font-semibold text-gray-900 dark:text-gray-100 leading-tight line-clamp-1 mb-0.5">
-              {event.title}
-            </div>
-            
-            <div className="text-[9px] text-gray-600 dark:text-gray-400 font-medium mb-0.5">
-              {formatTime(event.startTime)}
-            </div>
-            
-            {event.airports.length > 0 && (
-              <div className="text-[8px] text-gray-500 dark:text-gray-500 truncate">
-                {event.airports.slice(0, 2).join(', ')}
+          <div className={`${isSquished ? 'flex items-center justify-center h-full border border-neutral-50' : 'px-1.5 py-1'}`}>
+            {isSquished ? (
+              /* Vertical text layout with background image for squished events */
+              <div className="text-center w-full h-full flex items-center justify-center relative group overflow-hidden rounded-md">
+                {/* Background image with gradient overlay */}
+                {event.banner && (
+                  <>
+                    <Image 
+                      src={event.banner} 
+                      alt={event.title}
+                      fill
+                      className="object-cover absolute inset-0 z-0"
+                      sizes="100px"
+                    />
+                    {/* Dark gradient overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70 z-10"></div>
+                  </>
+                )}
+                
+                <div 
+                  className={`font-bold text-white leading-none tracking-wider select-none relative z-20 drop-shadow-sm ${
+                    screenWidth < 640 ? 'text-[7px]' : 'text-[8px]'
+                  }`}
+                  style={{
+                    writingMode: 'vertical-rl',
+                    textOrientation: 'mixed',
+                    transform: 'rotate(180deg)',
+                    maxHeight: '90%',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)'
+                  }}
+                  title={`${event.title} - ${formatTime(event.startTime)}`} // Enhanced tooltip
+                >
+                  {/* Show more characters on larger screens, fewer on mobile */}
+                  {screenWidth < 640 
+                    ? event.title.split('').slice(0, 8).join('') + (event.title.length > 8 ? '…' : '')
+                    : event.title.split('').slice(0, 14).join('') + (event.title.length > 14 ? '…' : '')
+                  }
+                </div>
+                
+                {/* Responsive indicator - more subtle on image background */}
+                <div className={`absolute top-0.5 right-0.5 bg-white/60 rounded-full z-20 ${
+                  screenWidth < 640 ? 'w-0.5 h-0.5' : 'w-1 h-1'
+                }`}></div>
               </div>
+            ) : (
+              /* Normal horizontal layout */
+              <>
+                <div className="text-[9px] font-semibold text-gray-900 dark:text-gray-100 leading-tight line-clamp-1 mb-0.5">
+                  {event.title}
+                </div>
+                
+                <div className="text-[9px] text-gray-600 dark:text-gray-400 font-medium mb-0.5">
+                  {formatTime(event.startTime)}
+                </div>
+                
+                {event.airports.length > 0 && (
+                  <div className="text-[8px] text-gray-500 dark:text-gray-500 truncate">
+                    {event.airports.slice(0, 2).join(', ')}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </>
@@ -234,7 +336,8 @@ function EventModal({ event, onClose }: EventModalProps) {
   );
 }
 
-export default function Calendar({ events, region, view, onViewChange }: CalendarProps) {
+export default function Calendar({ events, region, selectedRegion, onRegionChange, view, onViewChange }: CalendarProps) {
+  const [isRegionSelectorOpen, setIsRegionSelectorOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<ProcessedEvent | null>(null);
   const [containerHeight, setContainerHeight] = useState(600);
@@ -299,11 +402,49 @@ export default function Calendar({ events, region, view, onViewChange }: Calenda
               {formatViewRange(viewDays, view)}
             </h2>
             {region && (
-              <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center mt-0.5 animate-in fade-in duration-500">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 mr-2 animate-pulse hover:animate-none hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200">
+              <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center mt-0.5 animate-in fade-in duration-500 relative">
+                <button
+                  onClick={() => setIsRegionSelectorOpen(!isRegionSelectorOpen)}
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 mr-2 hover:animate-none hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200 cursor-pointer group"
+                >
                   {region}
-                </span>
+                  <svg className={`w-3 h-3 ml-1 transition-transform duration-200 ${isRegionSelectorOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
                 <span className="transition-all duration-300 hover:text-gray-700 dark:hover:text-gray-300 hover:font-medium">{events.length} events</span>
+                
+                {/* Region Dropdown */}
+                {isRegionSelectorOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setIsRegionSelectorOpen(false)} />
+                    <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50 animate-in slide-in-from-top-2 duration-200">
+                      <div className="py-2">
+                        {Object.entries(REGION_OPTIONS).map(([regionKey, regionName]) => (
+                          <button
+                            key={regionKey}
+                            onClick={() => {
+                              onRegionChange(regionKey as Region);
+                              setIsRegionSelectorOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-between ${
+                              selectedRegion === regionKey
+                                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium'
+                                : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                            }`}
+                          >
+                            {regionName}
+                            {selectedRegion === regionKey && (
+                              <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -410,8 +551,8 @@ export default function Calendar({ events, region, view, onViewChange }: Calenda
                           className="group absolute left-0 right-0 border-t-2 border-red-500 z-30 shadow-sm animate-in slide-in-from-left duration-1000"
                           style={{ top: `${currentTimePercentage}%` }}
                         >
-                          <div className="absolute -left-1 -top-1 w-2 h-2 bg-red-500 rounded-full shadow-md animate-pulse group-hover:animate-bounce group-hover:scale-150 transition-transform duration-200"></div>
-                          <div className="absolute right-2 -top-3 text-[8px] font-semibold text-red-600 bg-red-100 px-1 py-0.5 rounded animate-pulse hover:animate-none hover:bg-red-200 hover:scale-110 transition-all duration-200 cursor-default">
+                          <div className="absolute -left-1 w-2 h-2 bg-red-500 rounded-full shadow-md transition-transform" style={{ top: '50%', transform: 'translateY(-50%)' }}></div>
+                          <div className="absolute right-2 -top-3 text-[8px] font-semibold text-red-600 bg-red-100 px-1 py-0.5 rounded cursor-default">
                             NOW
                           </div>
                         </div>
@@ -443,11 +584,12 @@ export default function Calendar({ events, region, view, onViewChange }: Calenda
                                 event={event}
                                 onClick={() => setSelectedEvent(event)}
                                 isAllDay={true}
+                                view={view}
                                 style={{
                                   top: `${index * 9}%`, // Stack all-day events
                                   height: `${height}%`,
-                                  left: '2%',
-                                  width: '96%',
+                                  left: '1%',
+                                  width: '98%',
                                   zIndex: 50 + index // Higher z-index for all-day events
                                 }}
                               />
@@ -465,11 +607,12 @@ export default function Calendar({ events, region, view, onViewChange }: Calenda
                                 event={event}
                                 onClick={() => setSelectedEvent(event)}
                                 isAllDay={false}
+                                view={view}
                                 style={{
                                   top: `${Math.max(top, allDayEvents.length * 9)}%`, // Adjust for all-day events space
                                   height: `${height}%`,
-                                  left: layout ? `${layout.left}%` : '2%',
-                                  width: layout ? `${layout.width}%` : '96%',
+                                  left: layout ? `${layout.left}%` : '1%',
+                                  width: layout ? `${layout.width}%` : '98%',
                                   zIndex: 10 + (layout?.column || 0)
                                 }}
                               />

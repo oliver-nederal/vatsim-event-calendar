@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { VatsimEvent, VatsimEventsResponse, CachedEventsData, ProcessedEvent } from '@/types/vatsim';
 
-// Cache duration: 1 hour (in milliseconds)
-const CACHE_DURATION = 60 * 60 * 1000;
+// Cache duration: 30 minutes (in milliseconds)
+const CACHE_DURATION = 30 * 60 * 1000;
 
 // Available VATSIM regions
 export const VATSIM_REGIONS = {

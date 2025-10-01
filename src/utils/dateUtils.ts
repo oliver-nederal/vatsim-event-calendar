@@ -225,13 +225,13 @@ export function calculateEventLayout(events: Array<{ startTime: Date; endTime: D
   groups.forEach(group => {
     const sortedGroup = group.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
     const totalColumns = sortedGroup.length;
-    const columnWidth = Math.floor(96 / totalColumns); // 96% to leave margin
+    const columnWidth = Math.floor(98 / totalColumns); // 98% to leave smaller margin
     
     sortedGroup.forEach((event, index) => {
       eventLayout.push({
         id: event.id,
-        left: 2 + (index * columnWidth), // 2% left margin
-        width: columnWidth - 1, // Subtract 1% for spacing between columns
+        left: 1 + (index * columnWidth), // 1% left margin (reduced from 2%)
+        width: columnWidth - 0.3, // Subtract 0.3% for minimal spacing between columns (reduced from 1%)
         column: index,
         totalColumns: totalColumns
       });

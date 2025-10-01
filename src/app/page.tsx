@@ -10,7 +10,7 @@ const Calendar = dynamic(() => import('@/components/Calendar'), {
 import { ErrorMessage, StatusBar } from '@/components/UI';
 import { CalendarSkeleton, EmptyCalendarState } from '@/components/SkeletonLoader';
 import { useEvents } from '@/hooks/useEvents';
-import { RegionSelector, Region, REGION_OPTIONS } from '@/components/RegionSelector';
+import { Region, REGION_OPTIONS } from '@/components/RegionSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { ViewType } from '@/components/ViewSelector';
 
@@ -57,10 +57,6 @@ export default function Home() {
             </h1>
             <div className="flex items-center space-x-4">
               <ThemeSelector />
-              <RegionSelector 
-                selectedRegion={selectedRegion}
-                onRegionChange={handleRegionChange}
-              />
             </div>
           </div>
         </header>
@@ -86,7 +82,9 @@ export default function Home() {
               {events.length > 0 ? (
                 <Calendar 
                   events={events} 
-                  region={REGION_OPTIONS[selectedRegion]} 
+                  region={REGION_OPTIONS[selectedRegion]}
+                  selectedRegion={selectedRegion}
+                  onRegionChange={handleRegionChange}
                   view={selectedView}
                   onViewChange={handleViewChange}
                 />

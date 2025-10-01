@@ -87,7 +87,7 @@ pnpm dev
 Update cache duration in `src/app/api/events/route.ts`:
 
 ```typescript
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+const CACHE_DURATION = 30 * 60 * 1000; // 30 mins in milliseconds
 ```
 
 ### Event Display
