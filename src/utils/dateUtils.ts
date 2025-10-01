@@ -249,16 +249,11 @@ export function getViewDays(date: Date, viewType: ViewType): Date[] {
     case 'day':
       return [new Date(date)];
     case '3day':
-      const threeDayStart = getWeekStart(date);
-      // Find the day within the week and show 3 days starting from it
-      const dayOfWeek = date.getDay();
-      const mondayStart = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert Sunday=0 to Monday=0 system
-      const startIndex = Math.max(0, Math.min(mondayStart, 4)); // Ensure we don't go past Friday for 3-day view
-      
+      // Create 3-day view starting from the current date
       const days = [];
       for (let i = 0; i < 3; i++) {
-        const day = new Date(threeDayStart);
-        day.setDate(threeDayStart.getDate() + startIndex + i);
+        const day = new Date(date);
+        day.setDate(date.getDate() + i);
         days.push(day);
       }
       return days;
@@ -298,7 +293,8 @@ export function navigateView(currentDate: Date, direction: 'prev' | 'next', view
       newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
       break;
     case '3day':
-      newDate.setDate(newDate.getDate() + (direction === 'next' ? 3 : -3));
+      // Move by 2 days to create overlapping 3-day periods (1-3, 3-5, 5-7, etc.)
+      newDate.setDate(newDate.getDate() + (direction === 'next' ? 2 : -2));
       break;
     case 'week':
     default:

@@ -220,7 +220,7 @@ function EventModal({ event, onClose }: EventModalProps) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300" onClick={onClose}>
       <div 
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-500 animate-in zoom-in-95 slide-in-from-bottom-4"
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-none transform transition-all duration-500 animate-in zoom-in-95 slide-in-from-bottom-4"
         onClick={e => e.stopPropagation()}
       >
         {/* Modal Header with Banner */}
@@ -300,10 +300,10 @@ function EventModal({ event, onClose }: EventModalProps) {
                     strong: ({children}) => <strong className="font-semibold text-gray-900">{children}</strong>,
                     em: ({children}) => <em className="italic text-gray-800">{children}</em>,
                     code: ({children}) => <code className="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono text-gray-800">{children}</code>,
-                    pre: ({children}) => <pre className="bg-gray-100 p-3 rounded-md overflow-x-auto text-xs font-mono mb-2">{children}</pre>,
+                    pre: ({children}) => <pre className="bg-gray-100 p-3 rounded-md overflow-x-auto scrollbar-none text-xs font-mono mb-2">{children}</pre>,
                     blockquote: ({children}) => <blockquote className="border-l-4 border-blue-200 pl-4 py-2 bg-blue-50 rounded-r-md mb-2 italic text-gray-700">{children}</blockquote>,
                     a: ({href, children}) => <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
-                    table: ({children}) => <div className="overflow-x-auto mb-2"><table className="min-w-full border border-gray-200 rounded-md">{children}</table></div>,
+                    table: ({children}) => <div className="overflow-x-auto scrollbar-none mb-2"><table className="min-w-full border border-gray-200 rounded-md">{children}</table></div>,
                     thead: ({children}) => <thead className="bg-gray-50">{children}</thead>,
                     th: ({children}) => <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 border-b">{children}</th>,
                     td: ({children}) => <td className="px-3 py-2 text-xs text-gray-700 border-b">{children}</td>,
@@ -341,6 +341,8 @@ export default function Calendar({ events, region, selectedRegion, onRegionChang
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<ProcessedEvent | null>(null);
   const [containerHeight, setContainerHeight] = useState(600);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'next' | 'prev' | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
   // Update container height on resize
@@ -361,9 +363,34 @@ export default function Calendar({ events, region, selectedRegion, onRegionChang
   const viewDays = getViewDays(currentDate, view);
 
 
-  const goToPrevious = () => setCurrentDate(navigateView(currentDate, 'prev', view));
-  const goToNext = () => setCurrentDate(navigateView(currentDate, 'next', view));
-  const goToToday = () => setCurrentDate(new Date());
+  const handleNavigation = (direction: 'prev' | 'next') => {
+    if (isTransitioning) return; // Prevent multiple rapid clicks
+    
+    setIsTransitioning(true);
+    setTransitionDirection(direction);
+    
+    // Apply new date after a brief delay to allow animation to start
+    setTimeout(() => {
+      setCurrentDate(navigateView(currentDate, direction, view));
+    }, 50);
+    
+    // Reset transition state after animation completes
+    setTimeout(() => {
+      setIsTransitioning(false);
+      setTransitionDirection(null);
+    }, 400);
+  };
+  
+  const goToPrevious = () => handleNavigation('prev');
+  const goToNext = () => handleNavigation('next');
+  const goToToday = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentDate(new Date());
+      setIsTransitioning(false);
+    }, 200);
+  };
 
   const getEventsForDay = (date: Date) => {
     return events.filter(event => isEventOnDay(event, date));
@@ -379,20 +406,34 @@ export default function Calendar({ events, region, selectedRegion, onRegionChang
         <div className="flex items-center space-x-2">
           <button
             onClick={goToPrevious}
-            className="group p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-200 hover:shadow-md active:scale-90"
+            disabled={isTransitioning}
+            className={`group p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-200 hover:shadow-md active:scale-90 ${
+              isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             aria-label={`Previous ${view}`}
           >
-            <svg className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-all duration-200 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-all duration-200 ${
+              isTransitioning && transitionDirection === 'prev' 
+                ? 'animate-pulse -translate-x-1' 
+                : 'group-hover:-translate-x-0.5'
+            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           
           <button
             onClick={goToNext}
-            className="group p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-200 hover:shadow-md active:scale-90"
+            disabled={isTransitioning}
+            className={`group p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-200 hover:shadow-md active:scale-90 ${
+              isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             aria-label={`Next ${view}`}
           >
-            <svg className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-all duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-all duration-200 ${
+              isTransitioning && transitionDirection === 'next' 
+                ? 'animate-pulse translate-x-1' 
+                : 'group-hover:translate-x-0.5'
+            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -457,9 +498,14 @@ export default function Calendar({ events, region, selectedRegion, onRegionChang
           />
           <button
             onClick={goToToday}
-            className="group px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 hover:shadow-sm active:scale-95"
+            disabled={isTransitioning}
+            className={`group px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 hover:shadow-sm active:scale-95 ${
+              isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
-            Go to Today
+            <span className={isTransitioning ? 'animate-pulse' : ''}>
+              Go to Today
+            </span>
           </button>
         </div>
       </div>
@@ -491,11 +537,17 @@ export default function Calendar({ events, region, selectedRegion, onRegionChang
         </div>
 
         {/* Days Grid */}
-        <div className="flex-1 overflow-auto">
-          <div className={`grid min-w-full ${
+        <div className="flex-1 overflow-auto scrollbar-none">
+          <div className={`grid min-w-full transition-all duration-300 ${
             view === 'day' ? 'grid-cols-1' : 
             view === '3day' ? 'grid-cols-3' : 
             'grid-cols-7'
+          } ${
+            isTransitioning ? (
+              transitionDirection === 'next' 
+                ? 'transform translate-x-2' 
+                : 'transform -translate-x-2'
+            ) : 'transform translate-x-0'
           }`}>
               {viewDays.map((day, dayIndex) => {
                 const dayEvents = getEventsForDay(day);
@@ -513,11 +565,27 @@ export default function Calendar({ events, region, selectedRegion, onRegionChang
                 };
 
                 return (
-                  <div key={dayIndex} className={`border-r ${dayColors.border} last:border-r-0 ${view === 'day' ? 'min-w-full' : ''}`}>
+                  <div 
+                    key={`${day.toDateString()}-${dayIndex}`} 
+                    className={`border-r ${dayColors.border} last:border-r-0 ${view === 'day' ? 'min-w-full' : ''} transition-all duration-300 ${
+                      isTransitioning 
+                        ? 'transform scale-95 opacity-60' 
+                        : 'transform scale-100 opacity-100'
+                    }`}
+                    style={{ 
+                      transitionDelay: `${dayIndex * 30}ms`,
+                      animationDelay: `${dayIndex * 50}ms`
+                    }}
+                  >
                     {/* Day Header - Sticky */}
                     <div 
-                      className={`h-12 text-center sticky top-0 ${dayColors.header} z-20 border-b ${dayColors.border} flex flex-col justify-center shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group`}
-                      style={{ animationDelay: `${dayIndex * 50}ms` }}
+                      className={`h-12 text-center sticky top-0 ${dayColors.header} z-20 border-b ${dayColors.border} flex flex-col justify-center shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group ${
+                        isTransitioning ? 'blur-[1px]' : 'blur-0'
+                      }`}
+                      style={{ 
+                        animationDelay: `${dayIndex * 50}ms`,
+                        transitionDelay: `${dayIndex * 20}ms`
+                      }}
                     >
                       <div className={`text-[10px] font-semibold ${dayColors.dayText} uppercase tracking-wider transition-all duration-200`}>
                         {getDayAbbreviation(day.getDay())}
