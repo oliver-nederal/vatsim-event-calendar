@@ -678,7 +678,7 @@ export default function Calendar({
 
         <span className="text-2xl font-bold">vCalendar</span>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 mr-2">
           <ViewSelector currentView={view} onViewChange={onViewChange} />
           <button
             onClick={goToToday}
