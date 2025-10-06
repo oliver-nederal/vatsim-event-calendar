@@ -54,9 +54,9 @@ export function CalendarSkeleton() {
   const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
   
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className="h-full flex flex-col transition-colors duration-300">
       {/* Header skeleton */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-300">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-white/20 dark:border-white/10 glass-strong transition-colors duration-300">
         <div className="flex items-center space-x-2">
           <Skeleton className="w-8 h-8 rounded-full" />
           <Skeleton className="w-8 h-8 rounded-full" />
@@ -74,7 +74,7 @@ export function CalendarSkeleton() {
       {/* Calendar grid skeleton */}
       <div className="flex-1 flex overflow-hidden">
         {/* Time sidebar skeleton */}
-        <div className="w-14 flex-shrink-0 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-300">
+        <div className="w-14 flex-shrink-0 glass border-r border-white/20 dark:border-white/10">
           <div className="h-12 border-b border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
             <Skeleton className="h-2 w-6" />
           </div>
@@ -153,9 +153,9 @@ export function CalendarSkeleton() {
 // Empty state for when no events are found
 export function EmptyCalendarState({ region }: { region: string }) {
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white">
+    <div className="h-full flex flex-col relative">
       {/* Header skeleton */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-white">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-white/20 dark:border-white/10 glass-strong">
         <div className="flex items-center space-x-2">
           <Skeleton className="w-8 h-8 rounded-full" />
           <Skeleton className="w-8 h-8 rounded-full" />
@@ -173,7 +173,7 @@ export function EmptyCalendarState({ region }: { region: string }) {
       {/* Empty calendar grid */}
       <div className="flex-1 flex overflow-hidden">
         {/* Time sidebar */}
-        <div className="w-14 flex-shrink-0 bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-300">
+        <div className="w-14 flex-shrink-0 glass border-r border-white/20 dark:border-white/10">
           <div className="h-12 border-b border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
             <div className="text-[8px] font-semibold text-gray-600 uppercase tracking-wider">UTC</div>
           </div>
@@ -220,16 +220,16 @@ export function EmptyCalendarState({ region }: { region: string }) {
 
       {/* Empty state message overlay */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-in fade-in zoom-in-95 duration-1000">
-        <div className="text-center space-y-4 bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl hover:scale-105 transition-all duration-500 animate-bounce">
-          <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center hover:bg-blue-50 hover:rotate-12 transition-all duration-300">
-            <svg className="w-8 h-8 text-gray-400 hover:text-blue-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center space-y-4 glass-strong p-8 rounded-2xl shadow-glass-lg hover:shadow-glow hover:scale-105 transition-all duration-500">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-slate-600 to-slate-800 dark:from-slate-500 dark:to-slate-700 rounded-full flex items-center justify-center shadow-lg animate-float-slow">
+            <svg className="w-8 h-8 text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4M4 7v13a2 2 0 002 2h12a2 2 0 002-2V7" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 12v4m0 0l-2-2m2 2l2-2" />
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Events Found</h3>
-            <p className="text-sm text-gray-600 max-w-xs">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Events Found</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300 max-w-xs">
               There are currently no events scheduled for {region}. Check back later or try a different region.
             </p>
           </div>

@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased transition-colors duration-300`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased transition-all duration-300`}
         suppressHydrationWarning
       >
         <ThemeProvider

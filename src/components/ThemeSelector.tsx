@@ -51,9 +51,10 @@ export function ThemeSelector() {
   return (
     <button
       onClick={handleToggle}
-      className="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 hover:scale-110 active:scale-95"
+      className="flex flex-row space-x-2 p-2.5 rounded-xl text-gray-700 dark:text-gray-300 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
       title={`Current: ${theme} (click to cycle)`}
     >
+      <span>{(theme ? theme.charAt(0).toUpperCase() + theme.slice(1) : 'System')}</span>
       {getIcon()}
     </button>
   );

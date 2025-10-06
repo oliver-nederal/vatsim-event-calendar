@@ -29,7 +29,7 @@ export function ViewSelector({ currentView, onViewChange }: ViewSelectorProps) {
     ];
 
 return (
-    <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-px transition-colors duration-200">
+    <div className="flex glass rounded-xl p-1 shadow-lg">
         {views.map((view, index) => {
             const isActive = currentView === view.value;
             const isFirst = index === 0;
@@ -40,28 +40,23 @@ return (
                     <button
                         onClick={() => onViewChange(view.value)}
                         className={`
-                        group relative flex items-center px-3 py-1.5 text-sm font-medium transition-all duration-200 hover:shadow-sm active:scale-95
-                        ${isFirst ? 'rounded-l-md' : ''} 
-                        ${isLast ? 'rounded-r-md' : ''}
+                        group relative flex items-center px-2 py-1 text-sm font-medium transition-all duration-300 hover:shadow-lg active:scale-95
+                        ${isFirst ? 'rounded-l-lg' : ''} 
+                        ${isLast ? 'rounded-r-lg' : ''}
                         ${isActive 
-                            ? 'bg-white/50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm font-semibold' 
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                            ? 'glass-strong shadow-lg bg-slate-100/80 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 font-semibold scale-105' 
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:glass-strong'
                         }
                         `}
                         aria-label={`Switch to ${view.label} view`}
                         aria-pressed={isActive}
                     >
-                        <div className={`transition-all duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`}>
-                        </div>
-                        <span className="hidden sm:inline transition-colors duration-200">
-                        {view.shortLabel}
-                        </span>
-                        <span className="sm:hidden transition-colors duration-200">
+                        <span className="relative transition-colors duration-200">
                         {view.shortLabel}
                         </span>
                     </button>
 
-                    {!isLast && <div className="inset-0 min-h-[1em] w-px self-stretch bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400"></div>}
+                    {!isLast && <div className="inset-0 min-h-[1em] w-px self-stretch bg-gradient-to-b from-transparent via-white/30 dark:via-white/20 to-transparent"></div>}
                 </React.Fragment>
             );
         })}
